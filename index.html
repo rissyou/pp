@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위탁판매 도구</title>
+<style>
+  body {
+    margin: 0; background: #f5f6f8; color: #1d1f23;
+    font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    font-size: 20px; line-height: 1.6;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { font-size: 32px; margin: 0 0 6px; }
+  p { color: #5a606b; margin: 0 0 20px; }
+  a.card {
+    display: block; background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08); text-decoration: none; color: inherit;
+    border: 2px solid transparent;
+  }
+  a.card:hover, a.card:focus { border-color: #2457c5; outline: none; }
+  a.card b { font-size: 23px; color: #2457c5; }
+  a.card span { display: block; font-size: 17px; color: #5a606b; }
+  h2 { font-size: 20px; margin: 26px 0 10px; }
+  .note { font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>위탁판매 도구</h1>
+  <p>국내 생활용품 위탁판매 연습용 도구입니다.</p>
+
+  <a class="card" href="calculator.html"><b>🧮 위탁판매 계산기</b>
+    <span>숫자를 넣으면 판매 1건에 얼마가 남는지 계산합니다.</span></a>
+  <a class="card" href="compare.html"><b>📋 상품 비교표</b>
+    <span>공급업체 상품과 판매처 상품을 비교해 적는 양식입니다.</span></a>
+
+  <h2>연습용 가상 예시</h2>
+  <a class="card" href="compare.html?example=shelf"><b>욕실 선반 예시</b>
+    <span>동일 상품 확인 사례 (가상)</span></a>
+  <a class="card" href="compare.html?example=mat"><b>발매트 예시</b>
+    <span>판단 불가 사례 (가상)</span></a>
+
+  <p class="note">※ 입력한 내용은 서버로 전송되지 않고, 각자 사용하는 브라우저 안에서만 계산·저장됩니다.</p>
+</div>
+</body>
+</html>

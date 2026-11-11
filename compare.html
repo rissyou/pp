@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위탁판매 상품 비교표</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1d1f23; --sub: #5a606b; --line: #c9ced6;
+    --accent: #2457c5; --good: #138a3d; --good-bg: #e7f6ec; --bad: #c62828; --bad-bg: #fdecec;
+    --warn-bg: #fff6dc; --warn-line: #e5b100; --a: #eef3ff; --b: #f3f0ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    font-size: 19px; line-height: 1.55;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 32px; margin: 8px 0 4px; }
+  .intro { color: var(--sub); margin: 0 0 16px; }
+  .card { background: var(--card); border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .card h2 { font-size: 24px; margin: 0 0 12px; }
+  .rule { background: var(--warn-bg); border-left: 6px solid var(--warn-line); padding: 10px 14px; border-radius: 6px; font-size: 17px; margin-bottom: 16px; }
+  .rule ul { margin: 4px 0 0; padding-left: 22px; }
+  label.top { display: block; font-weight: bold; margin-bottom: 4px; }
+  input[type=text], textarea {
+    width: 100%; font-size: 20px; padding: 10px 12px; font-family: inherit; color: var(--text);
+    border: 2px solid var(--line); border-radius: 9px; background: #fff;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(36,87,197,.2); }
+  input.unk { background: #fafafa; color: var(--sub); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+  .item { border-top: 1px solid #e4e7ec; padding: 14px 0 6px; }
+  .item:first-of-type { border-top: none; }
+  .item h3 { font-size: 21px; margin: 0 0 8px; }
+  .item h3 .hl { color: var(--accent); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .col { border-radius: 10px; padding: 10px; }
+  .col.a { background: var(--a); }
+  .col.b { background: var(--b); }
+  .col .who { font-size: 15px; font-weight: bold; color: var(--sub); margin-bottom: 4px; }
+  .col .sub { font-size: 15px; color: var(--sub); margin: 6px 0 2px; }
+  .col.none { display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 16px; }
+  .src { margin-top: 8px; }
+  .src input { font-size: 17px; padding: 8px 10px; }
+
+  table.chk { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  table.chk th, table.chk td { border-bottom: 1px solid #e4e7ec; padding: 10px 6px; text-align: center; }
+  table.chk th:first-child, table.chk td:first-child { text-align: left; }
+  input[type=radio] { width: 24px; height: 24px; vertical-align: middle; cursor: pointer; }
+  .judge { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+  .judge label { border: 2px solid var(--line); border-radius: 10px; padding: 10px 16px; cursor: pointer; font-weight: bold; }
+  .judge label:has(input:checked) { border-color: var(--accent); background: var(--a); }
+  .suggest { font-size: 17px; padding: 10px 14px; border-radius: 8px; background: #eef1f5; margin-bottom: 10px; }
+
+  .calc-row { display: grid; grid-template-columns: 1fr 220px; gap: 10px; align-items: center; padding: 6px 0; }
+  .calc-row .help { font-size: 15px; color: var(--sub); }
+  .money-wrap { display: flex; align-items: center; gap: 6px; }
+  .money-wrap input { text-align: right; font-size: 22px; }
+  .money-wrap span { font-weight: bold; }
+  .result { border-radius: 12px; padding: 16px; text-align: center; margin-top: 12px; background: #eef1f5; }
+  .result .big { font-size: 38px; font-weight: bold; }
+  .result.good { background: var(--good-bg); color: var(--good); }
+  .result.bad { background: var(--bad-bg); color: var(--bad); }
+  .result2 { text-align: center; font-size: 19px; margin-top: 8px; font-weight: bold; }
+
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  button {
+    font-size: 19px; font-family: inherit; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;
+    border: 2px solid var(--accent); background: #fff; color: var(--accent);
+  }
+  button:hover { background: var(--a); }
+  button.danger { border-color: var(--bad); color: var(--bad); }
+  button.danger:hover { background: var(--bad-bg); }
+  .status { font-size: 15px; color: var(--sub); margin-top: 8px; }
+  .note { font-size: 16px; color: var(--sub); }
+
+  @media (max-width: 640px) {
+    .cols, .grid2 { grid-template-columns: 1fr; }
+    .calc-row { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: #fff; font-size: 13px; }
+    .card { box-shadow: none; border: 1px solid #ccc; padding: 10px; page-break-inside: auto; }
+    .noprint { display: none !important; }
+    input[type=text], textarea { border: 1px solid #bbb; font-size: 13px; padding: 4px 6px; }
+    .item { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>위탁판매 상품 비교표</h1>
+  <p class="intro">공급업체 상품과 판매처 상품을 비교해 적는 양식입니다.<br>
+  적은 내용은 <b>이 컴퓨터의 크롬에 자동 저장</b>되어, 창을 닫았다 열어도 남아 있습니다.</p>
+
+  <!-- 기본 정보 -->
+  <div class="card">
+    <h2>📅 기본 정보</h2>
+    <div class="grid2">
+      <div><label class="top" for="f_date">확인 날짜</label><input type="text" id="f_date" data-save></div>
+      <div><label class="top" for="f_title">메모용 제목</label><input type="text" id="f_title" placeholder="예: 욕실 선반 비교" data-save></div>
+    </div>
+    <div class="grid2">
+      <div><label class="top" for="f_linkA">공급업체 링크</label><input type="text" id="f_linkA" placeholder="https://..." data-save></div>
+      <div><label class="top" for="f_linkB">판매처 링크</label><input type="text" id="f_linkB" placeholder="https://..." data-save></div>
+    </div>
+  </div>
+
+  <!-- 비교표 -->
+  <div class="card">
+    <h2>📋 비교표</h2>
+    <div class="rule">✏️ <b>채우는 규칙</b>
+      <ul>
+        <li>확인한 칸에는 <b>출처와 날짜</b>를 함께 적습니다.</li>
+        <li>모르거나 페이지에 없으면 <b>'미확인'</b>이라고 적습니다. (아래 버튼으로 한 번에 채울 수 있음)</li>
+        <li><b>도매꾹 가격</b>과 <b>도매매 위탁 공급가격</b>은 따로 적습니다.</li>
+      </ul>
+    </div>
+    <div class="btns noprint" style="margin-bottom:12px">
+      <button type="button" id="btnUnknown">빈칸을 '미확인'으로 채우기</button>
+    </div>
+    <div id="items"></div>
+  </div>
+
+  <!-- 동일 상품 판단 -->
+  <div class="card">
+    <h2>🔎 같은 상품인지 판단</h2>
+    <p class="note">사진이 비슷한 것은 근거로 쓰지 않습니다. <b>글자로 된 정보</b>만 비교하세요.</p>
+    <table class="chk">
+      <thead><tr><th>확인 항목</th><th>일치</th><th>다름</th><th>미확인</th></tr></thead>
+      <tbody id="chkBody"></tbody>
+    </table>
+    <div class="suggest" id="suggest"></div>
+    <div><b>최종 판단 (직접 고르세요)</b></div>
+    <div class="judge">
+      <label><input type="radio" name="judge" value="동일 상품 확인" data-save> 동일 상품 확인</label>
+      <label><input type="radio" name="judge" value="유사 상품" data-save> 유사 상품</label>
+      <label><input type="radio" name="judge" value="판단 불가" data-save> 판단 불가</label>
+    </div>
+    <label class="top" for="f_judgeWhy">판단 이유</label>
+    <textarea id="f_judgeWhy" data-save placeholder="예: 모델명·제조사·KC 인증번호가 모두 같음"></textarea>
+  </div>
+
+  <!-- 계산 -->
+  <div class="card">
+    <h2>💰 남는 돈 계산</h2>
+    <p class="note">금액은 원 단위 숫자로만 넣으세요. 판매가격과 상품값은 <b>그 수량 전체</b> 금액입니다.</p>
+    <div id="calcRows"></div>
+    <div class="result" id="resBox">
+      <div>판매 1건당 남는 돈</div>
+      <div class="big" id="resProfit">0원</div>
+      <div id="resMsg">판매가격을 넣으면 계산됩니다.</div>
+    </div>
+    <div class="result2" id="resReturn"></div>
+    <p class="note">⚠️ 판매가격이 올라와 있다는 것만으로 잘 팔린다고 판단하지 않습니다. 리뷰 수로 판매량을 계산하지 않습니다.<br>
+    ※ 세금(종합소득세·매출 부가세 신고)은 들어 있지 않은 대략적인 계산입니다.</p>
+  </div>
+
+  <!-- 결론 -->
+  <div class="card">
+    <h2>📝 결론</h2>
+    <label class="top" for="f_why">🔍 추가 조사할 가치가 있는 이유</label>
+    <textarea id="f_why" data-save></textarea>
+    <label class="top" for="f_hold" style="margin-top:12px">⛔ 판매를 보류해야 할 이유</label>
+    <textarea id="f_hold" data-save></textarea>
+    <div class="grid2" style="margin-top:12px">
+      <div><label class="top" for="f_keyItem">⭐ 지금 확인할 가장 중요한 항목 1개</label><input type="text" id="f_keyItem" data-save></div>
+      <div><label class="top" for="f_keyWhy">그 이유</label><input type="text" id="f_keyWhy" data-save></div>
+    </div>
+  </div>
+
+  <div class="card noprint">
+    <h2>💾 저장 · 인쇄</h2>
+    <div class="btns">
+      <button type="button" id="btnPrint">인쇄 / PDF로 저장</button>
+      <button type="button" class="danger" id="btnClear">모두 지우기</button>
+    </div>
+    <p class="status" id="status"></p>
+    <p class="note">• 자동 저장은 <b>지금 보고 있는 비교표 1개</b>만 기억합니다. 다른 상품을 비교하기 전에
+    「인쇄 / PDF로 저장」에서 대상을 <b>'PDF로 저장'</b>으로 골라 파일로 남겨 두세요.<br>
+    • 크롬의 인터넷 사용 기록을 지우면 자동 저장된 내용도 지워질 수 있습니다.</p>
+  </div>
+</div>
+
+<script>
+  // ── 비교 항목 정의 ──
+  // aSub: 공급업체 칸을 도매꾹/도매매로 나눔, aNone/bNone: 해당 없음
+  var ITEMS = [
+    { k: "name", t: "상품 이름" },
+    { k: "model", t: "모델" },
+    { k: "maker", t: "제조사" },
+    { k: "kc", t: "KC 인증번호" },
+    { k: "size", t: "크기" },
+    { k: "material", t: "재질" },
+    { k: "color", t: "색상" },
+    { k: "set", t: "구성 수량" },
+    { k: "dgk", t: "도매꾹 가격", hl: true, bNone: true },
+    { k: "dmm", t: "도매매 위탁 공급가격", hl: true, bNone: true },
+    { k: "ship", t: "배송비", aSub: true },
+    { k: "total", t: "고객이 결제하는 총금액", aNone: true },
+    { k: "moq", t: "최소 주문 수량", aSub: true, bNone: true },
+    { k: "drop", t: "고객에게 한 개씩 직접 배송", aSub: true, bNone: true },
+    { k: "out", t: "출고 예정일" },
+    { k: "ret", t: "반품 조건" },
+    { k: "coupang", t: "쿠팡 재판매 허용", bNone: true },
+    { k: "img", t: "상품 이미지 사용 허용", aSub: true, bNone: true }
+  ];
+  var CHECKS = [
+    { k: "model", t: "모델명" }, { k: "maker", t: "제조사" }, { k: "kc", t: "KC 인증번호" },
+    { k: "size", t: "크기" }, { k: "material", t: "재질" }, { k: "set", t: "구성 수량" }
+  ];
+  var CALC = [
+    { k: "qty", t: "수량", help: "한 번에 판매하는 수량", unit: "개", def: "1" },
+    { k: "price", t: "판매가격", help: "그 수량 전체 금액", unit: "원" },
+    { k: "shipIn", t: "고객에게 받는 배송비", help: "무료배송이면 0", unit: "원" },
+    { k: "cost", t: "공급업체 상품값", help: "그 수량 전체 금액", unit: "원" },
+    { k: "shipOut", t: "공급업체에 주는 배송비", unit: "원" },
+    { k: "fee", t: "판매수수료 + 부가세", unit: "원" },
+    { k: "etc", t: "1건당 광고비 + 반품 예상비", unit: "원" },
+    { k: "retCost", t: "반품 1건 왕복 배송비", help: "반품이 생겼을 때 내가 부담하는 금액", unit: "원" }
+  ];
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ── 화면 만들기 ──
+  function textInput(id, ph) {
+    return '<input type="text" id="' + id + '" data-save data-cmp placeholder="' + esc(ph || "미확인") + '">';
+  }
+  var html = "";
+  ITEMS.forEach(function (it) {
+    var a, b;
+    if (it.aNone) a = '<div class="col a none">해당 없음</div>';
+    else if (it.aSub) a = '<div class="col a"><div class="who">공급업체 A</div>' +
+      '<div class="sub">도매꾹</div>' + textInput("a_" + it.k + "_dgk") +
+      '<div class="sub">도매매</div>' + textInput("a_" + it.k + "_dmm") + '</div>';
+    else a = '<div class="col a"><div class="who">공급업체 A</div>' + textInput("a_" + it.k) + '</div>';
+    if (it.bNone) b = '<div class="col b none">해당 없음</div>';
+    else b = '<div class="col b"><div class="who">판매처 B</div>' + textInput("b_" + it.k) + '</div>';
+    html += '<div class="item"><h3' + (it.hl ? ' class="hl"' : "") + '><span' + (it.hl ? ' class="hl"' : "") + '>' + esc(it.t) + '</span></h3>' +
+      '<div class="cols">' + a + b + '</div>' +
+      '<div class="src"><input type="text" id="s_' + it.k + '" data-save placeholder="출처 · 확인 날짜 (예: A 상세설명 / 2026-11-11)"></div></div>';
+  });
+  el("items").innerHTML = html;
+
+  var chk = "";
+  CHECKS.forEach(function (c) {
+    chk += "<tr><td>" + esc(c.t) + "</td>" + ["일치", "다름", "미확인"].map(function (v) {
+      return '<td><input type="radio" name="c_' + c.k + '" value="' + v + '" data-save aria-label="' + esc(c.t + " " + v) + '"></td>';
+    }).join("") + "</tr>";
+  });
+  el("chkBody").innerHTML = chk;
+
+  var calcHtml = "";
+  CALC.forEach(function (c) {
+    calcHtml += '<div class="calc-row"><div><b>' + esc(c.t) + '</b>' + (c.help ? '<div class="help">' + esc(c.help) + '</div>' : "") + '</div>' +
+      '<div class="money-wrap"><input type="text" inputmode="numeric" id="m_' + c.k + '" data-save data-money placeholder="0"' + (c.def ? ' value="' + c.def + '"' : "") + '><span>' + c.unit + '</span></div></div>';
+  });
+  el("calcRows").innerHTML = calcHtml;
+
+  // ── 계산 ──
+  function toNumber(s) { var d = String(s || "").replace(/[^0-9]/g, ""); return d === "" ? 0 : parseInt(d, 10); }
+  function won(n) { return (n < 0 ? "-" : "") + Math.round(Math.abs(n)).toLocaleString("ko-KR") + "원"; }
+  function formatMoney(input) {
+    var raw = input.value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+    input.value = raw === "" ? "" : parseInt(raw, 10).toLocaleString("ko-KR");
+  }
+  function m(k) { return toNumber(el("m_" + k).value); }
+
+  function calc() {
+    var qty = m("qty"), price = m("price");
+    var income = price + m("shipIn");
+    var profit = income - (m("cost") + m("shipOut") + m("fee") + m("etc"));
+    var box = el("resBox");
+    el("resProfit").textContent = won(profit);
+    box.className = "result";
+    if (qty < 1) { box.className = "result bad"; el("resMsg").textContent = "⚠️ 수량은 1 이상으로 넣어 주세요."; }
+    else if (price === 0) { el("resMsg").textContent = "판매가격을 넣으면 계산됩니다."; }
+    else if (profit > 0) { box.className = "result good"; el("resMsg").textContent = "✅ 1건 팔 때마다 " + won(profit) + " 남습니다. (한 개당 " + won(profit / qty) + ")"; }
+    else if (profit < 0) { box.className = "result bad"; el("resMsg").textContent = "❌ 1건 팔 때마다 " + won(-profit) + " 손해입니다."; }
+    else { el("resMsg").textContent = "남는 돈도 손해도 없습니다. (0원)"; }
+
+    var rc = m("retCost");
+    if (price > 0 && rc > 0) {
+      var after = profit - rc;
+      el("resReturn").innerHTML = "반품 1건이 생기면: <span style='color:" + (after < 0 ? "var(--bad)" : "var(--good)") + "'>" + won(after) + "</span>";
+    } else { el("resReturn").textContent = ""; }
+  }
+
+  // ── 동일 상품 판단 참고 ──
+  function getRadio(name) { var r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ""; }
+  function suggest() {
+    var same = 0, diff = 0, unk = 0;
+    CHECKS.forEach(function (c) { var v = getRadio("c_" + c.k); if (v === "일치") same++; if (v === "다름") diff++; if (v === "미확인") unk++; });
+    var txt;
+    if (same + diff + unk === 0) txt = "위 항목을 고르면 참고 의견이 나옵니다.";
+    else if (same + diff === 0) txt = "참고: 고른 항목이 모두 미확인입니다 → 비교할 근거가 없으니 <b>판단 불가</b>입니다.";
+    else if (diff > 0) txt = "참고: 다른 항목이 " + diff + "개 있습니다 → <b>유사 상품</b>이거나 다른 상품일 수 있습니다.";
+    else if (getRadio("c_model") === "일치" && getRadio("c_maker") === "일치" && same >= 4)
+      txt = "참고: 모델명과 제조사를 포함해 " + same + "개가 일치합니다 → <b>동일 상품 확인</b>에 가깝습니다.";
+    else txt = "참고: 일치 " + same + "개, 나머지는 미확인입니다 → 근거가 부족하면 <b>판단 불가</b>입니다.";
+    el("suggest").innerHTML = "💡 " + txt + "<br><span class='note'>최종 판단은 직접 골라 주세요.</span>";
+  }
+
+  // ── 자동 저장 ──
+  var KEY = "wituk-compare-v1";
+  var exampleMode = false;
+  function saveAll() {
+    if (exampleMode) { el("status").textContent = "예시 화면이라 저장되지 않습니다."; return; }
+    var data = {};
+    document.querySelectorAll("[data-save]").forEach(function (f) {
+      if (f.type === "radio") { if (f.checked) data[f.name] = f.value; }
+      else data[f.id] = f.value;
+    });
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+      el("status").textContent = "✔ 자동 저장됨 (" + new Date().toLocaleTimeString("ko-KR") + ")";
+    } catch (e) { el("status").textContent = "⚠️ 이 브라우저에서는 자동 저장이 되지 않습니다. PDF로 저장해 두세요."; }
+  }
+  function loadAll() {
+    var data = null;
+    try { data = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+    if (!data) return false;
+    document.querySelectorAll("[data-save]").forEach(function (f) {
+      if (f.type === "radio") f.checked = data[f.name] === f.value;
+      else if (data[f.id] !== undefined) f.value = data[f.id];
+    });
+    return true;
+  }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  // ── 이벤트 ──
+  document.addEventListener("input", function (e) {
+    if (e.target.hasAttribute("data-money")) { formatMoney(e.target); calc(); }
+    if (e.target.hasAttribute("data-save")) saveAll();
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.type === "radio") { suggest(); saveAll(); }
+  });
+
+  el("btnUnknown").addEventListener("click", function () {
+    var n = 0;
+    document.querySelectorAll("[data-cmp]").forEach(function (f) { if (f.value.trim() === "") { f.value = "미확인"; n++; } });
+    saveAll();
+    alert(n + "개 빈칸을 '미확인'으로 채웠습니다.");
+  });
+  el("btnPrint").addEventListener("click", function () { window.print(); });
+  el("btnClear").addEventListener("click", function () {
+    if (!confirm("비교표의 내용을 모두 지울까요?\n지운 내용은 되돌릴 수 없습니다.")) return;
+    document.querySelectorAll("[data-save]").forEach(function (f) {
+      if (f.type === "radio") f.checked = false; else f.value = "";
+    });
+    el("m_qty").value = "1";
+    el("f_date").value = today();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    calc(); suggest(); saveAll();
+    window.scrollTo(0, 0);
+  });
+
+  // ── 연습용 가상 예시 (주소 뒤에 ?example=shelf 를 붙이면 열림, 저장되지 않음) ──
+  var S = "2026-11-11";
+  var EXAMPLES = {
+    shelf: {
+      fields: {
+        f_date: S, f_title: "(가상 예시) 스테인리스 욕실 코너 선반 2단",
+        f_linkA: "(가상 예시 – 실제 링크 없음)", f_linkB: "(가상 예시 – 실제 링크 없음)",
+        a_name: "한빛생활 스테인리스 욕실 선반 2단", b_name: "한빛생활 욕실 코너 선반 2단", s_name: "A·B 상품명 / " + S,
+        a_model: "HB-BS2", b_model: "HB-BS2", s_model: "A·B 상세설명 / " + S,
+        a_maker: "한빛생활", b_maker: "한빛생활", s_maker: "A·B 상품정보 고시 / " + S,
+        a_kc: "(가상) XX-0000", b_kc: "(가상) XX-0000", s_kc: "A·B 상품정보 고시 / " + S,
+        a_size: "가로 30 × 세로 30 × 높이 45cm", b_size: "가로 30 × 세로 30 × 높이 45cm", s_size: "A·B 상세설명 / " + S,
+        a_material: "스테인리스 304", b_material: "스테인리스 304", s_material: "A·B 상세설명 / " + S,
+        a_color: "실버", b_color: "실버", s_color: "A·B 옵션 / " + S,
+        a_set: "선반 1개 + 고정 부품 1세트", b_set: "선반 1개 + 고정 부품 1세트", s_set: "A·B 구성 안내 / " + S,
+        a_dgk: "1개 6,500원", s_dgk: "A 도매꾹 페이지 / " + S,
+        a_dmm: "1개 8,200원", s_dmm: "A 도매매 페이지 / " + S,
+        a_ship_dgk: "4,000원", a_ship_dmm: "3,500원", b_ship: "무료배송", s_ship: "A·B 페이지 / " + S,
+        b_total: "19,800원 (1개, 배송비 포함)", s_total: "B 결제 금액 표시 / " + S,
+        a_moq_dgk: "5개", a_moq_dmm: "1개", s_moq: "A 페이지 / " + S,
+        a_drop_dgk: "미확인", a_drop_dmm: "가능 (위탁배송 표시)", s_drop: "A 도매매 페이지 / " + S,
+        a_out: "주문 후 3~5일", b_out: "미표기", s_out: "A 페이지 / " + S,
+        a_ret: "단순변심 반품 시 왕복 7,000원 고객 부담. 설치 후 반품 불가", b_ret: "미확인", s_ret: "A 교환·반품 안내 / " + S,
+        a_coupang: "도매매: 오픈마켓 판매 가능 (쿠팡 포함) / 도매꾹: 미확인", s_coupang: "A 도매매 판매 정책 / " + S,
+        a_img_dgk: "미확인", a_img_dmm: "상세 이미지 사용 가능, 대표 이미지는 직접 수정 권장", s_img: "A 도매매 페이지 / " + S,
+        f_judgeWhy: "모델명(HB-BS2), 제조사(한빛생활), KC 인증번호, 크기, 재질, 구성 수량이 모두 일치함. 사진은 근거로 쓰지 않음.",
+        m_qty: "1", m_price: "19,800", m_shipIn: "0", m_cost: "8,200", m_shipOut: "3,500",
+        m_fee: "2,300", m_etc: "800", m_retCost: "7,000",
+        f_why: "동일 상품으로 확인되어 B 가격과 바로 비교 가능\n도매매에서 1개부터 위탁배송 가능, 쿠팡 판매 허용\n원가 11,700원, 판매가 19,800원 (수수료·광고비 빼고 1건당 약 5,000원)",
+        f_hold: "같은 상품을 같은 이름으로 파는 판매자(B)가 이미 있어 가격 경쟁 가능성\n출고 3~5일로 쿠팡 고객 불만·취소 우려\n설치 후 반품 불가 조건 → 분쟁 가능성\n반품 1건이면 손해로 바뀜",
+        f_keyItem: "공급업체의 실제 출고 소요일과 재고 상태",
+        f_keyWhy: "쿠팡 판매는 허용되어 있어, 남은 가장 큰 위험이 늦은 출고로 인한 취소와 불만이기 때문"
+      },
+      radios: { c_model: "일치", c_maker: "일치", c_kc: "일치", c_size: "일치", c_material: "일치", c_set: "일치", judge: "동일 상품 확인" }
+    },
+    mat: {
+      fields: {
+        f_date: S, f_title: "(가상 예시) 규조토 욕실 발매트",
+        f_linkA: "(가상 예시 – 실제 링크 없음)", f_linkB: "(가상 예시 – 실제 링크 없음)",
+        a_name: "소담리빙 규조토 발매트", b_name: "빨리 마르는 욕실 발매트", s_name: "A·B 상품명 / " + S,
+        a_model: "SD-DM40", b_model: "미확인 (표기 없음)", s_model: "A 상세설명 / " + S,
+        a_maker: "소담리빙", b_maker: "미확인 (상품정보 고시에 '상세페이지 참조'만 있음)", s_maker: "A·B 상품정보 고시 / " + S,
+        a_kc: "미확인", b_kc: "미확인", s_kc: "A·B 페이지에 표기 없음 / " + S,
+        a_size: "40 × 60cm, 두께 0.9cm", b_size: "미확인 ('옵션 참고'라고만 되어 있고 옵션에도 크기 없음)", s_size: "A·B 페이지 / " + S,
+        a_material: "규조토", b_material: "미확인 (상세설명이 글자 없는 이미지뿐)", s_material: "A·B 상세설명 / " + S,
+        a_color: "화이트, 그레이", b_color: "화이트, 그레이, 베이지", s_color: "A·B 옵션 / " + S,
+        a_set: "발매트 1개 + 사포 1장", b_set: "미확인", s_set: "A 구성 안내 / " + S,
+        a_dgk: "1개 5,200원", s_dgk: "A 도매꾹 페이지 / " + S,
+        a_dmm: "1개 6,900원", s_dmm: "A 도매매 페이지 / " + S,
+        a_ship_dgk: "3,500원", a_ship_dmm: "3,500원", b_ship: "무료배송", s_ship: "A·B 페이지 / " + S,
+        b_total: "14,900원 (1개, 배송비 포함)", s_total: "B 결제 금액 표시 / " + S,
+        a_moq_dgk: "3개", a_moq_dmm: "1개", s_moq: "A 페이지 / " + S,
+        a_drop_dgk: "미확인", a_drop_dmm: "가능", s_drop: "A 도매매 페이지 / " + S,
+        a_out: "결제 후 2일 이내", b_out: "미표기", s_out: "A 페이지 / " + S,
+        a_ret: "파손 외 단순변심 반품 시 왕복 7,000원. 사용 흔적이 있으면 반품 불가", b_ret: "미확인", s_ret: "A 교환·반품 안내 / " + S,
+        a_coupang: "미확인 (판매 정책 페이지에 쿠팡 언급 없음)", s_coupang: "A 도매매 판매 정책 / " + S,
+        a_img_dgk: "미확인", a_img_dmm: "이미지 사용 가능", s_img: "A 도매매 페이지 / " + S,
+        f_judgeWhy: "사진은 비슷하지만 B에 모델명·제조사·크기·재질·구성 수량이 모두 없어 비교할 글자 정보가 부족함. 색상 옵션도 다름(B에 베이지 추가). 같은 상품인지 다른 상품인지 판단할 근거가 없음.",
+        m_qty: "1", m_price: "14,900", m_shipIn: "0", m_cost: "6,900", m_shipOut: "3,500",
+        m_fee: "1,700", m_etc: "700", m_retCost: "7,000",
+        f_why: "공급업체 A의 크기·재질·구성이 글자로 분명하게 적혀 있어 상품 설명을 쓰기 좋음\n도매매에서 1개부터 위탁배송 가능, 출고 2일 이내\n이미지 사용 허용",
+        f_hold: "쿠팡 재판매 허용 여부 미확인\nB와 같은 상품인지 몰라 적정 판매가격의 근거가 없음 (14,900원은 연습용 숫자)\n규조토는 깨질 수 있어 파손·반품 위험, 반품비 7,000원이 원가에 비해 큼\n'사용 흔적이 있으면 반품 불가' 조건으로 분쟁 가능성",
+        f_keyItem: "공급업체가 쿠팡 재판매를 허용하는지",
+        f_keyWhy: "허용되지 않으면 B와 같은 상품인지 따질 필요가 없기 때문. 허용되면 그다음에 B의 크기·재질 확인"
+      },
+      radios: { c_model: "미확인", c_maker: "미확인", c_kc: "미확인", c_size: "미확인", c_material: "미확인", c_set: "미확인", judge: "판단 불가" }
+    }
+  };
+
+  var exKey = null;
+  try { exKey = new URLSearchParams(location.search).get("example"); } catch (e) {}
+  if (exKey && EXAMPLES[exKey]) {
+    exampleMode = true;
+    var ex = EXAMPLES[exKey];
+    Object.keys(ex.fields).forEach(function (id) { if (el(id)) el(id).value = ex.fields[id]; });
+    Object.keys(ex.radios).forEach(function (name) {
+      var r = document.querySelector('input[name="' + name + '"][value="' + ex.radios[name] + '"]');
+      if (r) r.checked = true;
+    });
+    var banner = document.createElement("div");
+    banner.className = "rule";
+    banner.innerHTML = "⚠️ <b>연습용 가상 예시입니다.</b> 상품·회사·가격은 모두 지어낸 것이고, 이 화면에서 고친 내용은 <b>저장되지 않습니다.</b>";
+    document.querySelector(".wrap").insertBefore(banner, document.querySelector(".card"));
+    el("status").textContent = "예시 화면이라 저장되지 않습니다.";
+  } else if (!loadAll()) {
+    el("f_date").value = today();
+  }
+  calc(); suggest();
+</script>
+</body>
+</html>

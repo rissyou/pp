@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위탁판매 계산기</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1d1f23;
+    --sub: #5a606b;
+    --line: #c9ced6;
+    --accent: #2457c5;
+    --good: #138a3d;
+    --good-bg: #e7f6ec;
+    --bad: #c62828;
+    --bad-bg: #fdecec;
+    --warn-bg: #fff6dc;
+    --warn-line: #e5b100;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 34px; margin: 8px 0 4px; }
+  .intro { color: var(--sub); margin: 0 0 20px; }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px 22px 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .card h2 { font-size: 24px; margin: 0 0 14px; }
+  .field { margin-bottom: 22px; }
+  .field label { display: block; font-weight: bold; font-size: 21px; }
+  .num {
+    display: inline-block; min-width: 30px; height: 30px; line-height: 30px;
+    text-align: center; border-radius: 50%; background: var(--accent);
+    color: #fff; font-size: 17px; margin-right: 6px;
+  }
+  .help { color: var(--sub); font-size: 17px; margin: 2px 0 8px; }
+  .input-row { display: flex; align-items: center; gap: 10px; }
+  input {
+    flex: 1; width: 100%;
+    font-size: 26px; padding: 12px 14px;
+    border: 2px solid var(--line); border-radius: 10px;
+    font-family: inherit; color: var(--text); background: #fff;
+  }
+  input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(36,87,197,.2); }
+  input.money, input.qty { text-align: right; }
+  .unit { font-size: 22px; font-weight: bold; min-width: 30px; }
+  .warn {
+    background: var(--warn-bg); border-left: 6px solid var(--warn-line);
+    padding: 8px 12px; border-radius: 6px; font-size: 17px; margin: 4px 0 8px;
+  }
+  .per-unit { font-size: 17px; color: var(--accent); margin-top: 6px; min-height: 1em; }
+
+  .result-main {
+    border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px;
+    background: #eef1f5;
+  }
+  .result-main .label { font-size: 20px; }
+  .result-main .big { font-size: 46px; font-weight: bold; line-height: 1.3; }
+  .result-main .msg { font-size: 19px; font-weight: bold; }
+  .result-main.good { background: var(--good-bg); color: var(--good); }
+  .result-main.bad  { background: var(--bad-bg);  color: var(--bad); }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  td { padding: 10px 4px; border-bottom: 1px solid #e4e7ec; font-size: 19px; vertical-align: top; }
+  td.v { text-align: right; font-weight: bold; white-space: nowrap; }
+  tr.total td { border-top: 2px solid var(--text); font-size: 21px; }
+  .small { font-size: 15px; color: var(--sub); font-weight: normal; }
+
+  button {
+    font-size: 22px; font-family: inherit; padding: 14px 26px;
+    border-radius: 10px; border: 2px solid var(--bad); background: #fff;
+    color: var(--bad); cursor: pointer; font-weight: bold;
+  }
+  button:hover { background: var(--bad-bg); }
+  .note { font-size: 16px; color: var(--sub); margin-top: 18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>위탁판매 계산기</h1>
+  <p class="intro">숫자를 넣으면 <b>판매 1건</b>에 얼마가 남는지 바로 계산됩니다.<br>
+  금액은 모두 <b>원 단위 숫자</b>로만 넣으세요. (예: 15000)</p>
+
+  <!-- 입력 -->
+  <div class="card">
+    <h2>📝 입력하기</h2>
+
+    <div class="field">
+      <label for="name"><span class="num">1</span>상품 이름</label>
+      <p class="help">메모용입니다. 계산에는 쓰이지 않아요. 예: 실리콘 주방장갑</p>
+      <div class="input-row"><input id="name" type="text" placeholder="상품 이름"></div>
+    </div>
+
+    <div class="field">
+      <label for="qty"><span class="num">2</span>한 번에 판매하는 수량</label>
+      <p class="help">1개만 팔면 <b>1</b>, 3개 묶음 상품이면 <b>3</b></p>
+      <div class="input-row"><input id="qty" class="qty" type="text" inputmode="numeric" value="1"><span class="unit">개</span></div>
+    </div>
+
+    <div class="field">
+      <label for="price"><span class="num">3</span>그 수량 전체의 판매가격</label>
+      <div class="warn">⚠️ <b>묶음 전체</b> 가격을 넣으세요. 한 개 가격이 아닙니다.<br>
+      예: 3개 묶음을 15,000원에 팔면 → <b>15000</b></div>
+      <div class="input-row"><input id="price" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+      <div class="per-unit" id="pricePer"></div>
+    </div>
+
+    <div class="field">
+      <label for="shipIn"><span class="num">4</span>고객에게 별도로 받는 배송비</label>
+      <p class="help">무료배송이면 <b>0</b></p>
+      <div class="input-row"><input id="shipIn" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+    </div>
+
+    <div class="field">
+      <label for="cost"><span class="num">5</span>그 수량 전체의 공급업체 상품값</label>
+      <div class="warn">⚠️ <b>묶음 전체</b> 금액을 넣으세요.<br>
+      예: 한 개 3,000원 × 3개 → <b>9000</b></div>
+      <div class="input-row"><input id="cost" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+      <div class="per-unit" id="costPer"></div>
+    </div>
+
+    <div class="field">
+      <label for="shipOut"><span class="num">6</span>공급업체에 지급하는 배송비</label>
+      <p class="help">공급업체가 고객에게 보내 줄 때 내가 내는 배송비</p>
+      <div class="input-row"><input id="shipOut" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+    </div>
+
+    <div class="field">
+      <label for="fee"><span class="num">7</span>판매수수료 + 관련 부가세 합계</label>
+      <p class="help">판매한 마켓이 떼어 가는 수수료와 그 부가세를 <b>더한 금액</b> (정산 내역 참고)</p>
+      <div class="input-row"><input id="fee" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+    </div>
+
+    <div class="field">
+      <label for="etc"><span class="num">8</span>판매 1건당 광고비 + 반품 예상비</label>
+      <p class="help">잘 모르면 <b>0</b>으로 시작하고 나중에 고쳐도 됩니다.</p>
+      <div class="input-row"><input id="etc" class="money" type="text" inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+    </div>
+  </div>
+
+  <!-- 결과 -->
+  <div class="card">
+    <h2>📊 결과 <span id="resultName" class="small"></span></h2>
+
+    <div class="result-main" id="mainBox">
+      <div class="label">판매 1건당 남는 돈</div>
+      <div class="big" id="profit">0원</div>
+      <div class="msg" id="msg">판매가격을 넣으면 계산됩니다.</div>
+    </div>
+
+    <table>
+      <tr><td>받는 돈 <span class="small">(판매가격 + 고객 배송비)</span></td><td class="v" id="rIn">0원</td></tr>
+      <tr><td>나가는 돈 <span class="small">(상품값 + 공급 배송비 + 수수료 + 광고·반품비)</span></td><td class="v" id="rOut">0원</td></tr>
+      <tr class="total"><td>남는 돈 (1건)</td><td class="v" id="rProfit">0원</td></tr>
+      <tr><td>한 개당 남는 돈 <span class="small" id="rQtyNote"></span></td><td class="v" id="rPerUnit">0원</td></tr>
+      <tr><td>이익률 <span class="small">(남는 돈 ÷ 받는 돈)</span></td><td class="v" id="rRate">0%</td></tr>
+    </table>
+
+    <button type="button" id="clearBtn">모두 지우기</button>
+
+    <p class="note">※ 이 계산기는 판매 1건만 놓고 본 <b>대략적인 이익</b>입니다.
+    종합소득세, 매출 부가세 신고 금액 등은 들어 있지 않습니다.<br>
+    ※ 입력한 내용은 이 컴퓨터 밖으로 전송되지 않습니다.</p>
+  </div>
+</div>
+
+<script>
+  var moneyIds = ["price", "shipIn", "cost", "shipOut", "fee", "etc"];
+
+  function toNumber(str) {
+    var digits = String(str || "").replace(/[^0-9]/g, "");
+    return digits === "" ? 0 : parseInt(digits, 10);
+  }
+  function won(n) {
+    var sign = n < 0 ? "-" : "";
+    return sign + Math.round(Math.abs(n)).toLocaleString("ko-KR") + "원";
+  }
+  function el(id) { return document.getElementById(id); }
+
+  // 입력하는 동안 쉼표 자동 표시
+  function formatInput(input) {
+    var raw = input.value.replace(/[^0-9]/g, "").replace(/^0+(?=\d)/, "");
+    input.value = raw === "" ? "" : parseInt(raw, 10).toLocaleString("ko-KR");
+  }
+
+  function calc() {
+    var qty = toNumber(el("qty").value);
+    var qtyOk = qty >= 1;
+    var q = qtyOk ? qty : 1;
+
+    var price = toNumber(el("price").value);
+    var shipIn = toNumber(el("shipIn").value);
+    var cost = toNumber(el("cost").value);
+    var shipOut = toNumber(el("shipOut").value);
+    var fee = toNumber(el("fee").value);
+    var etc = toNumber(el("etc").value);
+
+    // 한 개당 금액 확인 문구
+    if (q >= 2 && price > 0) {
+      el("pricePer").textContent = "👉 " + q + "개 묶음 → 한 개당 " + won(price / q) + "에 파는 셈입니다. 맞나요?";
+    } else { el("pricePer").textContent = ""; }
+    if (q >= 2 && cost > 0) {
+      el("costPer").textContent = "👉 " + q + "개 묶음 → 한 개당 " + won(cost / q) + "에 사 오는 셈입니다. 맞나요?";
+    } else { el("costPer").textContent = ""; }
+
+    var income = price + shipIn;
+    var outgo = cost + shipOut + fee + etc;
+    var profit = income - outgo;
+    var rate = income > 0 ? (profit / income) * 100 : 0;
+
+    var name = el("name").value.trim();
+    el("resultName").textContent = name ? "— " + name : "";
+
+    el("rIn").textContent = won(income);
+    el("rOut").textContent = won(outgo);
+    el("rProfit").textContent = won(profit);
+    el("rPerUnit").textContent = won(profit / q);
+    el("rQtyNote").textContent = "(남는 돈 ÷ " + q + "개)";
+    el("rRate").textContent = (Math.round(rate * 10) / 10).toFixed(1) + "%";
+    el("profit").textContent = won(profit);
+
+    var box = el("mainBox");
+    box.className = "result-main";
+    if (!qtyOk) {
+      el("msg").textContent = "⚠️ 수량은 1 이상으로 넣어 주세요.";
+      box.className = "result-main bad";
+    } else if (price === 0) {
+      el("msg").textContent = "판매가격을 넣으면 계산됩니다.";
+    } else if (profit > 0) {
+      box.className = "result-main good";
+      el("msg").textContent = "✅ 1건 팔 때마다 " + won(profit) + " 남습니다.";
+    } else if (profit < 0) {
+      box.className = "result-main bad";
+      el("msg").textContent = "❌ 이 가격이면 1건 팔 때마다 " + won(-profit) + " 손해입니다.";
+    } else {
+      el("msg").textContent = "남는 돈도 손해도 없습니다. (0원)";
+    }
+  }
+
+  moneyIds.concat(["qty"]).forEach(function (id) {
+    el(id).addEventListener("input", function () { formatInput(this); calc(); });
+  });
+  el("name").addEventListener("input", calc);
+
+  el("clearBtn").addEventListener("click", function () {
+    if (!confirm("입력한 내용을 모두 지울까요?")) return;
+    el("name").value = "";
+    el("qty").value = "1";
+    moneyIds.forEach(function (id) { el(id).value = ""; });
+    calc();
+    el("name").focus();
+  });
+
+  // 주소 뒤에 ?price=12900 처럼 붙이면 그 숫자로 미리 채워서 열기 (예시 연습용)
+  try {
+    var params = new URLSearchParams(location.search);
+    if (params.has("name")) el("name").value = params.get("name");
+    moneyIds.concat(["qty"]).forEach(function (id) {
+      if (params.has(id)) { el(id).value = params.get(id); formatInput(el(id)); }
+    });
+  } catch (e) {}
+
+  calc();
+</script>
+</body>
+</html>
